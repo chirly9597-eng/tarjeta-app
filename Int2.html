@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tarjeta de Confidencialidad</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(to bottom, #ffe6ea, #fff);
+    text-align: center;
+    margin: 0;
+}
+
+.container {
+    background: white;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(255,0,0,0.2);
+}
+
+h2 {
+    color: #d1003f;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px;
+    width: 90%;
+    max-width: 300px;
+}
+
+button {
+    background: linear-gradient(45deg, red, #ff4d6d);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* ❤️ filas horizontales */
+.fila {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ❤️ corazones */
+.heart {
+    font-size: 35px;
+    color: red;
+}
+
+.heart-grande {
+    font-size: 60px;
+    color: #d1003f;
+}
+
+.heart-box {
+    text-align: center;
+    margin: 10px;
+}
+
+.heart-box input {
+    width: 60px;
+    font-size: 12px;
+}
+
+.titulo-bonito {
+    font-family: 'Pacifico', cursive;
+    font-size: 28px;
+    color: #d1003f;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 🔲 QR bonito */
+#qrContainer {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff5f7;
+    border-radius: 15px;
+    display: inline-block;
+    box-shadow: 0 0 10px rgba(255,0,0,0.2);
+}
+
+.qr-text {
+    color: #d1003f;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Tarjeta de Confidencialidad ❤️</h2>
+
+<input id="negocio" placeholder="Nombre del negocio"><br>
+<input id="cantidad" type="number" placeholder="Cantidad de corazones"><br>
+
+<button onclick="crearCorazones()">Aceptar</button>
+</div>
+
+<!-- CORAZONES -->
+<div id="zonaCorazones" class="container hidden">
+<h3>Asigna valores</h3>
+<div id="corazones"></div>
+
+<button onclick="confirmar()">Confirmar</button>
+</div>
+
+<!-- FINAL -->
+<div id="final" class="container hidden">
+<h3 id="titulo"></h3>
+<div id="vistaFinal"></div>
+
+<button onclick="generar()">Generar Tarjeta</button>
+
+<div id="qrContainer">
+    <p class="qr-text">Escanéame ❤️</p>
+    <div id="qr"></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHk1-MHdDjO1LBboUjPyTlb6mcS3wDFeY",
+  authDomain: "tarjeta-de-fidelidad-4e126.firebaseapp.com",
+  projectId: "tarjeta-de-fidelidad-4e126",
+  storageBucket: "tarjeta-de-fidelidad-4e126.firebasestorage.app",
+  messagingSenderId: "41517910115",
+  appId: "1:41517910115:web:50a9967fe588cce103d056"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let total = 0;
+let valores = [];
+let negocio = "";
+
+// CREAR CORAZONES
+window.crearCorazones = function(){
+
+    negocio = document.getElementById("negocio").value;
+    total = parseInt(document.getElementById("cantidad").value);
+
+    document.getElementById("zonaCorazones").classList.remove("hidden");
+
+    let cont = document.getElementById("corazones");
+    cont.innerHTML = "";
+
+    for(let i=0;i<total;i++){
+
+        let box = document.createElement("div");
+        box.className="heart-box";
+
+        let h = document.createElement("div");
+        h.className="heart";
+        h.innerHTML="♡";
+
+        let input = document.createElement("input");
+        input.placeholder="Ej: 20%";
+
+        input.oninput = ()=> valores[i] = input.value;
+
+        box.appendChild(h);
+        box.appendChild(input);
+
+        cont.appendChild(box);
+    }
+}
+
+// CONFIRMAR
+window.confirmar = function(){
+
+    document.getElementById("final").classList.remove("hidden");
+
+    document.getElementById("titulo").innerHTML =
+        `<div class="titulo-bonito">${negocio}</div>`;
+
+    let cont = document.getElementById("vistaFinal");
+    cont.innerHTML = "";
+
+    let mitad = Math.ceil(total / 2);
+
+    let fila1 = document.createElement("div");
+    fila1.className="fila";
+
+    let fila2 = document.createElement("div");
+    fila2.className="fila";
+
+    for(let i=0;i<total;i++){
+
+        let box = document.createElement("div");
+        box.className="heart-box";
+
+        let h = document.createElement("div");
+        h.className="heart-grande";
+        h.innerHTML="♡";
+
+        let txt = document.createElement("div");
+        txt.innerHTML = valores[i] || "";
+
+        box.appendChild(h);
+        box.appendChild(txt);
+
+        if(i < mitad){
+            fila1.appendChild(box);
+        } else {
+            fila2.appendChild(box);
+        }
+    }
+
+    cont.appendChild(fila1);
+    cont.appendChild(fila2);
+}
+
+// GENERAR TARJETA + QR
+window.generar = async function(){
+
+    let docRef = await addDoc(collection(db, "tarjetas"), {
+        negocio: negocio,
+        total: total,
+        valores: valores,
+        llenos: []
+    });
+
+    let url = window.location.origin + "/tarjeta.html?id=" + docRef.id;
+
+    document.getElementById("qr").innerHTML = "";
+
+    new QRCode(document.getElementById("qr"), {
+        text: url,
+        width: 220,
+        height: 220
+    });
+}
+
+</script>
+
+</body>
+</html>
