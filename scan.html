@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Escanear QR</title>
+
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    background:#fff0f3;
+}
+
+#reader{
+    width:300px;
+    margin:auto;
+}
+
+h2{
+    color:#d1003f;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Escanea el código ❤️</h2>
+
+<div id="reader"></div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHk1-MHdDjO1LBboUjPyTlb6mcS3wDFeY",
+  authDomain: "tarjeta-de-fidelidad-4e126.firebaseapp.com",
+  projectId: "tarjeta-de-fidelidad-4e126",
+  storageBucket: "tarjeta-de-fidelidad-4e126.firebasestorage.app",
+  messagingSenderId: "41517910115",
+  appId: "1:41517910115:web:50a9967fe588cce103d056"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function onScanSuccess(decodedText) {
+
+    // ejemplo: tarjeta.html?id=ABC123
+    let url = new URL(decodedText);
+    let id = url.searchParams.get("id");
+
+    if(!id){
+        alert("QR inválido");
+        return;
+    }
+
+    let ref = doc(db, "tarjetas", id);
+
+    getDoc(ref).then(docSnap => {
+
+        if(!docSnap.exists()) return;
+
+        let data = docSnap.data();
+
+        // buscar siguiente corazón vacío
+        let siguiente = -1;
+
+        for(let i=0;i<data.total;i++){
+            if(!data.llenos.includes(i)){
+                siguiente = i;
+                break;
+            }
+        }
+
+        if(siguiente === -1){
+            alert("Tarjeta completa 🎉");
+            return;
+        }
+
+        let nuevos = [...data.llenos, siguiente];
+
+        updateDoc(ref,{
+            llenos: nuevos
+        });
+
+        alert("❤️ Corazón registrado");
+    });
+}
+
+// iniciar cámara
+let html5QrCode = new Html5Qrcode("reader");
+
+Html5Qrcode.getCameras().then(devices => {
+
+    if(devices.length){
+
+        html5QrCode.start(
+            devices[0].id,
+            { fps: 10, qrbox: 250 },
+            onScanSuccess
+        );
+    }
+});
+
+</script>
+
+</body>
+</html>
