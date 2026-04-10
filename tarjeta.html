@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tu Tarjeta</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family: Arial;
+    background: linear-gradient(to bottom,#ffe6ea,#fff);
+    text-align:center;
+    margin:0;
+}
+
+.container{
+    background:white;
+    margin:15px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(255,0,0,0.2);
+}
+
+.titulo{
+    font-family:'Pacifico';
+    font-size:30px;
+    color:#d1003f;
+}
+
+.fila{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.heart{
+    font-size:65px;
+    margin:10px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.vacio{
+    color:#ccc;
+}
+
+.lleno{
+    color:red;
+    transform:scale(1.2);
+}
+
+.aviso{
+    color:#d1003f;
+    font-weight:bold;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div id="titulo" class="titulo"></div>
+
+<div id="corazones"></div>
+
+<div id="aviso" class="aviso"></div>
+
+<button onclick="compartir()">Compartir tarjeta 🔗</button>
+</div>
+
+<audio id="sonido" src="https://www.soundjay.com/buttons/sounds/button-09.mp3"></audio>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHk1-MHdDjO1LBboUjPyTlb6mcS3wDFeY",
+  authDomain: "tarjeta-de-fidelidad-4e126.firebaseapp.com",
+  projectId: "tarjeta-de-fidelidad-4e126",
+  storageBucket: "tarjeta-de-fidelidad-4e126.firebasestorage.app",
+  messagingSenderId: "41517910115",
+  appId: "1:41517910115:web:50a9967fe588cce103d056"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+const ref = doc(db, "tarjetas", id);
+
+let dataGlobal = null;
+
+// 🔄 TIEMPO REAL
+onSnapshot(ref, (docSnap)=>{
+
+    if(!docSnap.exists()) return;
+
+    let data = docSnap.data();
+    dataGlobal = data;
+
+    document.getElementById("titulo").innerText = data.negocio;
+
+    let cont = document.getElementById("corazones");
+    cont.innerHTML = "";
+
+    let mitad = Math.ceil(data.total / 2);
+
+    let fila1 = document.createElement("div");
+    fila1.className="fila";
+
+    let fila2 = document.createElement("div");
+    fila2.className="fila";
+
+    for(let i=0;i<data.total;i++){
+
+        let h = document.createElement("div");
+        h.className="heart";
+
+        if(data.llenos.includes(i)){
+            h.classList.add("lleno");
+            h.innerHTML="❤️";
+        }else{
+            h.classList.add("vacio");
+            h.innerHTML="♡";
+        }
+
+        let box = document.createElement("div");
+        box.style.textAlign="center";
+
+        let txt = document.createElement("div");
+        txt.innerHTML = data.valores[i] || "";
+
+        // ❤️ llenar corazón
+        h.onclick = async ()=>{
+
+            if(!data.llenos.includes(i)){
+
+                let nuevos = [...data.llenos, i];
+
+                await updateDoc(ref,{ llenos: nuevos });
+
+                document.getElementById("sonido").play();
+
+                if(nuevos.length === data.total - 1){
+                    document.getElementById("aviso").innerText =
+                        "🔥 ¡Te falta uno!";
+                }
+
+                if(nuevos.length === data.total){
+                    document.getElementById("aviso").innerText =
+                        "🎉 ¡Completado!";
+                }
+            }
+        };
+
+        // ✨ emoji
+        h.ondblclick = ()=>{
+            let emoji = prompt("Pon emoji ❤️✨🔥");
+            if(emoji) h.innerHTML = emoji;
+        };
+
+        // 📸 imagen
+        h.oncontextmenu = (e)=>{
+            e.preventDefault();
+            let url = prompt("Pega URL de imagen");
+            if(url){
+                h.innerHTML = `<img src="${url}" width="50">`;
+            }
+        };
+
+        box.appendChild(h);
+        box.appendChild(txt);
+
+        if(i < mitad){
+            fila1.appendChild(box);
+        }else{
+            fila2.appendChild(box);
+        }
+    }
+
+    cont.appendChild(fila1);
+    cont.appendChild(fila2);
+});
+
+// 🔗 compartir
+window.compartir = function(){
+
+    let link = window.location.href;
+
+    navigator.clipboard.writeText(link);
+
+    alert("🔗 Link copiado");
+}
+
+</script>
+
+</body>
+</html>
