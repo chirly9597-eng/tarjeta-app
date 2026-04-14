@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tarjeta de fidelidad</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,#ffe6ea,#fff);
+  margin:0;
+  padding:20px;
+}
+
+.container{
+  max-width:400px;
+  margin:auto;
+}
+
+h1{
+  text-align:center;
+  color:#d6336c;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
+  margin-top:20px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:15px;
+  background:linear-gradient(45deg,#ff416c,#ff4b2b);
+  color:white;
+  font-size:16px;
+  margin-top:10px;
+}
+
+.hearts{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin:15px 0;
+}
+
+.heart{
+  font-size:30px;
+  color:#ff4d6d;
+}
+
+.business{
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  color:#c9184a;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Tarjeta de fidelidad</h1>
+
+<div class="card">
+
+<input id="negocio" placeholder="Nombre del negocio">
+<input id="cantidad" type="number" placeholder="Cantidad de corazones">
+
+<button onclick="generarInputs()">Confirmar</button>
+
+<div id="inputs"></div>
+
+<button onclick="generarTarjeta()">Generar tarjeta</button>
+
+</div>
+
+<div class="card" id="resultado" style="display:none">
+
+<div class="business" id="nombreNegocio"></div>
+
+<div class="hearts" id="fila1"></div>
+<div class="hearts" id="fila2"></div>
+
+</div>
+
+</div>
+
+<script>
+
+function generarInputs(){
+  let cantidad = document.getElementById("cantidad").value;
+  let cont = document.getElementById("inputs");
+  cont.innerHTML = "";
+
+  for(let i=0;i<cantidad;i++){
+    cont.innerHTML += `<input placeholder="Valor corazón ${i+1}">`;
+  }
+}
+
+function generarTarjeta(){
+  let nombre = document.getElementById("negocio").value;
+  let cantidad = parseInt(document.getElementById("cantidad").value);
+
+  document.getElementById("resultado").style.display="block";
+  document.getElementById("nombreNegocio").innerText = nombre;
+
+  let fila1 = document.getElementById("fila1");
+  let fila2 = document.getElementById("fila2");
+
+  fila1.innerHTML="";
+  fila2.innerHTML="";
+
+  let mitad = Math.ceil(cantidad/2);
+
+  for(let i=0;i<cantidad;i++){
+    let heart = `<div class="heart">❤</div>`;
+
+    if(i < mitad){
+      fila1.innerHTML += heart;
+    }else{
+      fila2.innerHTML += heart;
+    }
+  }
+}
+
+</script>
+
+</body>
+</html>
