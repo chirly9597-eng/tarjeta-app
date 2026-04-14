@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarjeta de Fidelidad</title>
+
+<!-- FUENTE LETTERING -->
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(#f8e6ea, #f3d6dc);
+    text-align: center;
+}
+
+/* TARJETAS */
+.card {
+    background: #f7dfe5;
+    margin: 20px;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+/* TITULO */
+h1 {
+    color: #a05a6c;
+}
+
+/* INPUTS */
+input {
+    width: 80%;
+    padding: 12px;
+    margin: 10px;
+    border-radius: 10px;
+    border: none;
+}
+
+/* BOTONES */
+button {
+    background: #a05a6c;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 20px;
+}
+
+/* CIRCULOS */
+.circulo {
+    width: 45px;
+    height: 45px;
+    background: #d8a1af;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+    color: white;
+    font-size: 12px;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* NOMBRE DEL NEGOCIO (LETTERING 💗) */
+#clienteFinal {
+    font-family: 'Pacifico', cursive;
+    font-size: 24px;
+    color: #a05a6c;
+    margin-top: 15px;
+    letter-spacing: 1px;
+}
+
+/* OCULTO */
+.oculto {
+    display: none;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- PANTALLA 1 -->
+<div class="card" id="pantalla1">
+
+    <h1>Tarjeta de Fidelidad</h1>
+
+    <input type="text" id="nombre" placeholder="Nombre del negocio">
+    <br>
+
+    <input type="number" id="cantidad" placeholder="Cantidad de fidelidad">
+    <br>
+
+    <button onclick="crear()">Aceptar</button>
+
+</div>
+
+<!-- PANTALLA 2 -->
+<div class="card oculto" id="pantalla2">
+
+    <h1>Configurar valores</h1>
+
+    <div id="contenedor"></div>
+
+    <button onclick="confirmar()">Confirmar</button>
+
+</div>
+
+<!-- PANTALLA 3 -->
+<div class="card oculto" id="pantalla3">
+
+    <h1>¡Consigue un servicio gratis!</h1>
+
+    <div id="resultado" class="grid"></div>
+
+    <img id="qr" width="120">
+
+    <p id="clienteFinal"></p>
+
+</div>
+
+<script>
+
+let valores = [];
+
+function crear() {
+
+    let cantidad = parseInt(document.getElementById("cantidad").value);
+
+    if (!cantidad) {
+        alert("Ingresa la cantidad");
+        return;
+    }
+
+    document.getElementById("pantalla1").classList.add("oculto");
+    document.getElementById("pantalla2").classList.remove("oculto");
+
+    let contenedor = document.getElementById("contenedor");
+    contenedor.innerHTML = "";
+
+    for (let i = 0; i < cantidad; i++) {
+
+        let div = document.createElement("div");
+
+        div.innerHTML = `
+            <div class="circulo">${i+1}</div>
+            <input placeholder="Ej: 20%">
+        `;
+
+        contenedor.appendChild(div);
+    }
+}
+
+function confirmar() {
+
+    let inputs = document.querySelectorAll("#contenedor input");
+    valores = [];
+
+    inputs.forEach(input => {
+        valores.push(input.value);
+    });
+
+    let nombre = document.getElementById("nombre").value;
+    let cantidad = valores.length;
+
+    document.getElementById("pantalla2").classList.add("oculto");
+    document.getElementById("pantalla3").classList.remove("oculto");
+
+    let resultado = document.getElementById("resultado");
+    resultado.innerHTML = "";
+
+    let columnas = Math.ceil(cantidad / 2);
+    resultado.style.gridTemplateColumns = `repeat(${columnas}, 45px)`;
+
+    valores.forEach((valor, i) => {
+
+        let div = document.createElement("div");
+        div.classList.add("circulo");
+
+        div.innerHTML = valor || (i+1);
+
+        resultado.appendChild(div);
+    });
+
+    // SOLO NOMBRE CON LETRA BONITA 💗
+    document.getElementById("clienteFinal").innerText = nombre;
+
+    // QR
+    let url = window.location.href;
+    document.getElementById("qr").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(url);
+}
+
+</script>
+
+</body>
+</html>
